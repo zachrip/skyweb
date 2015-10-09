@@ -15,15 +15,7 @@ class MessageService {
         this.requestWithJar = request.defaults({jar: cookieJar});
     }
 
-    public sendMessage(skypeAccount:SkypeAccount, conversationId:string, message:string) {
-        var requestBody = JSON.stringify({
-            ///'clientmessageid': Utils.getCurrentTime() + '', //fixme looks like we don't need this?(at least if we don't want to
-            // have the ability to modify text(content) of the message.)
-            'content': message,
-            'messagetype': 'RichText',
-            'contenttype': 'text'
-        });
-        console.log('sending message ' + requestBody);
+    private send(messageBody: string, skypeAccount: SkypeAccount, conversationId: string) {
         this.requestWithJar.post(Consts.SKYPEWEB_HTTPS + skypeAccount.messagesHost + '/v1/users/ME/conversations/' + conversationId + '/messages', {
             body: requestBody,
             headers: {
@@ -36,6 +28,28 @@ class MessageService {
                 Utils.throwError('Failed to send message.');
             }
         });
+    }
+
+    public sendMessage(skypeAccount:SkypeAccount, conversationId:string, message:string) {
+        var requestBody = JSON.stringify({
+            'clientmessageid': Date.now(),
+            'content': message,
+            'messagetype': 'RichText',
+            'contenttype': 'text'
+        });
+        console.log('sending message ' + requestBody);
+        this.send(requestBody, skypeAccount, conversationId);
+    }
+
+    public editMessage(skypeAccount: SkypeAccount, conversationId: string, message: string) {
+        var requestBody = JSON.stringify({
+            'skypeeditedid': Date.now(),
+            'content': message,
+            'messagetype': 'RichText',
+            'contenttype': 'text'
+        });
+        console.log('editing message ' + requestBody);
+        this.send(requestBody, skypeAccount, conversationId);
     }
 }
 
